@@ -81,11 +81,125 @@ So, you got all the hardware ready, now you want to install the pre-requisites f
 
 Note: a **MetricQ-Source** (i.e. some sensor) creates data which can be sent to a **MetricQ-Server** to be thereafter consumed by a **MetricQ-Sink** (e.g. a database).
 
-### Software-Pre-Requisites
-apt install...
-git clone....
+### Speaking I2C
 
-https://github.com/metricq/metricq-source-example
+So first-off, we want to make sure, that we got the I²C communication established. Particularly the following steps:
+1. Enabling I²C
+2. Query used Adresses on the I²C bus
+3. Dump Data
+
+So on the command line call `sudo raspi-config`, navigate into the menu for `Interface Options`, and enable `I2C` therein.
+
+Then install the I²C tools with `sudo apt install i2c-tools`. And thereafter invoke `i2cdetect 1`, which will print something like this:
+```console
+username@raspberrypi:~ $ i2cdetect 1
+WARNING! This program can confuse your I2C bus, cause data loss and worse!
+I will probe file /dev/i2c-1.
+I will probe address range 0x08-0x77.
+Continue? [Y/n] Y
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:                         -- -- -- -- -- -- -- -- 
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+70: -- -- -- -- -- -- 76 --
+```
+
+Thereafter you can query the device on that adress by invoking `i2cdump 1 0x76` which will hopefully yield a lot gibberish from line 9 onwards.  If instead it only shows a lot of "XXXXXXXXXXXXXXXX" then that means that unfortunately no data can be read from that address.
+
+### Software-Pre-Requisites
+
+You need a bunch of dependencies, particularly:
+- a Python>=3.10
+- git
+- adafruit_sensor
+- adafruit-circuitpython
+- adafruit-circuitpython-bme280
+
+
+Thereafter run:
+```bash
+git clone https://github.com/metricq/metricq-source-example
+cd metricq-source-example
+pip3 install .
+```
 
 ### Programming
-....
+
+Now you can adapt the `source.py`.
+
+Importing the libraries and initializing them:
+```python
+from adafruit_bme280 import basic as ada_bme280
+import board
+[...]
+        # use the default board.SCL and board.SDA
+        i2c = board.I2C()
+        self.bme = ada_bme280.Adafruit_BME280_I2C(
+                i2c=i2c,
+                address=0x76)
+
+[...]
+```
+
+Tell the Server your Metadata:
+```python
+[...]
+    logger.info("BmeSource received config: {}", config)
+
+        self.period = 1 / rate  # type: ignore #  https://github.com/python/mypy/issues/3004
+
+        self.metric_prefix = prefix
+        all_metadata = {
+            f"{prefix}.humidity": {
+                "rate": rate,
+                "description": "Relative Humidity in the office (accuracy about 3 %RH with an additional hysteresis of 1 %RH)",
+                "unit": "%RH"
+            },
+[...]
+        await self.declare_metrics(all_metadata)
+[...]
+```
+
+Actually read and send the data:
+```python
+    async def update(self) -> None:
+
+        # Send temperature at the current time:
+        await self.send(
+            f"{self.metric_prefix}.humidity",
+            time=metricq.Timestamp.now(),
+            value=self.bme.humidity,
+        )
+[...]
+```
+
+
+
+### Systemd-Unit
+
+(write Something on run.sh here..)
+
+```systemd
+[Unit]
+Description=A MetricQ Data Source (utilizing a BME280 sensor)
+After=network.target
+Documentation=https://metricq.github.io/metricq-python/
+
+[Service]
+Type=simple
+EnvironmentFile=/home/username/metricq-source-example/env-metricq-server-connection
+User=username
+Group=username
+# Apparently we need to wait a little longer than just 5 seconds when restarting, because of this MetricQ error message:
+# Failed to connect BmeSource: RESOURCE_LOCKED - cannot obtain exclusive access to locked queue
+ExecStartPre=/usr/bin/sleep 20
+ExecStart=/home/username/metricq-source-example/run.sh
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+```
