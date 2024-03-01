@@ -19,7 +19,10 @@ Bosch's sensortec series provides us with the [BME280 sensor](https://www.bosch-
 - `temperature`
 - `barometric pressure`
 
-Unless you are very capable at miniature soldering 8 pins with a distance of just 0.55 mm between the connection pads, you might want to fetch some BME280 pre-soldered on a PCB[*] from some electronics retailer.
+
+As you can see below, it's **Package dimensions** may appear quite small at 2.5 mm width, with the 8 pins (sized at 3.5 mm width) being spaced only 0.30 mm apart.  So you may want to opt to fetch some BME280 pre-soldered on a PCB[*] from some electronics retailer.
+
+![BME280 Detail](img/bme280-cropped_s.png)
 
 Similar sensors: GY-21, HTU21D/SHT21 (Note: adjust the I²C address for those sensors)
 
