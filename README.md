@@ -34,17 +34,25 @@ Further Reading:
 [*] PCB is shorthand for Printed Circuit Board
 
 ### Raspberry Pi
+<div style="float: left; margin-right: 2em;">
+  <img width="401" style="margin-bottom: 0px;" src="img/RaspberryPi_3B.svg">
+  <div style="width: 401px; background-color: #cccccc; color: #000000; margin-top: 0px;">Raspberry Pi 3B (by Efa [from Wikimedia](https://en.wikipedia.org/wiki/File:RaspberryPi_3B.svg)). Due to the OS and Python you'll probably want to use at least that.</div>
+</div>
 
 Here we are using Raspberry Pi 4 with Argon One V.2 housing here. However the BME280 sensor can be connected to even a simple Raspberry Pi 1 A.
 
 Follow some other Online tutorial on how to setup your raspberry pi including putting some debian-ish operating system on it.
 
-### I2C Introduction
+<div style="clear: left;"> &nbsp; </div>
 
+### I2C Introduction
+<div style="float: left; margin-right: 2em;">
+  <img width="465" style="margin-bottom: 0px;" src="img/bme280-detail.png">
+  <div style="width: 465px; background-color: #cccccc; color: #000000; margin-top: 0px;">Detail of a dedicated sensor board, with the BME280 chip's PINs readily soldered to provide I²C pins.</div>
+</div>
 For brevity purposes we'll assume you got some BME280 sensor on a PCB providing [I²C](https://en.wikipedia.org/wiki/I%C2%B2C) on four Pins. We will not concern ourselves with SPI here, because it requires two more pins to work and I²C's frequency/Baud-rate is far far sufficient for reading a few small numbers.
 
-Your sensor and PCB might look a little something like this:
-![BME280](img/bme280-detail.png)
+Your sensor and PCB might look a little something like here.
 
 Do note the four pins here:
 - Vin: Voltage Input (i.e. Polarity: Positive (+); 1.71 - 3.6 volt[*])
@@ -71,6 +79,8 @@ Simply run the four aforementioned Pins to the Raspberry Pi into the respective 
 (for a complete reference see [the Pinout.xyz site](https://pinout.xyz/))
 
 I marked the Pins 3, 4, 5 and 6 which I've been using. For providing 3 Volts instead, you might choose to use Pin 1 (3.3 Volt) instead of Pin 4.
+
+<div style="clear: left;"> &nbsp; </div>
 
 ### Completed Hardware Setup
 
@@ -101,13 +111,13 @@ I will probe file /dev/i2c-1.
 I will probe address range 0x08-0x77.
 Continue? [Y/n] Y
      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
-00:                         -- -- -- -- -- -- -- -- 
-10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
-60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+00:                         -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 70: -- -- -- -- -- -- 76 --
 ```
 
